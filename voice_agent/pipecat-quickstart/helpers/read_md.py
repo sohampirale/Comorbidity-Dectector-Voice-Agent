@@ -1,6 +1,3 @@
-from strands import tool
-
-@tool
 def read_md(filepath: str) -> str:
     """
     Reads the contents of a Markdown (.md) file from the given filepath and returns it as a string.

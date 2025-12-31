@@ -62,40 +62,49 @@ from strands import Agent,tool
 from strands.models.litellm import LiteLLMModel
 #from strands_tools import calculator 
 from helpers.read_md import read_md
+from pipecat.services.deepgram.tts import DeepgramTTSService
 
 load_dotenv(override=True)
 
-model = LiteLLMModel(
-    client_args={
-        "api_key":os.getenv('OPENROUTER_API_KEY'),
-    },
-    model_id="openrouter/openai/gpt-4o-mini",
-    # model_id="openrouter/google/gemini-2.0-flash-lite-001",
-    # model_id="openrouter/google/gemini-2.0-flash-exp:free",
-    # model_id="openrouter/google/gemini-2.0-flash-001",
-    # model_id="openrouter/google/gemini-2.5-pro",
-    params={
-        'temperature':0.5,
-        "max_tokens":1000
-    },
-)
-
-agent_prompt = read_md("prompts/agents/patient_onboard_agent/AGENT.md")
-
-agent = Agent(
-    model=model,
-    tools=[],
-    system_prompt=agent_prompt
-)
 
 async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
     logger.info(f"Starting bot")
 
     stt = DeepgramSTTService(api_key=os.getenv("DEEPGRAM_API_KEY"))
 
-    tts = CartesiaTTSService(
-        api_key=os.getenv("CARTESIA_API_KEY"),
-        voice_id="71a7ad14-091c-4e8e-a314-022ece01c121",  # British Reading Lady
+    # tts = CartesiaTTSService(
+    #     api_key=os.getenv("CARTESIA_API_KEY"),
+    #     voice_id="71a7ad14-091c-4e8e-a314-022ece01c121",  # British Reading Lady
+    # )
+
+    tts = DeepgramTTSService(
+        api_key=os.getenv("DEEPGRAM_API_KEY"),
+        # voice_id="aura-asteria-en",  
+        voice_id="aura-2-andromeda-en", 
+    )
+
+    #llm 
+    model = LiteLLMModel(
+        client_args={
+            "api_key":os.getenv('OPENROUTER_API_KEY'),
+        },
+        model_id="openrouter/openai/gpt-4o-mini",
+        # model_id="openrouter/google/gemini-2.0-flash-lite-001",
+        # model_id="openrouter/google/gemini-2.0-flash-exp:free",
+        # model_id="openrouter/google/gemini-2.0-flash-001",
+        # model_id="openrouter/google/gemini-2.5-pro",
+        params={
+            'temperature':0.5,
+            "max_tokens":1000
+        },
+    )
+
+    agent_prompt = read_md("prompts/agents/patient_onboard_agent/AGENT.md")
+
+    agent = Agent(
+        model=model,
+        tools=[],
+        system_prompt=agent_prompt
     )
 
     llm = StrandsAgentsProcessor(agent=agent)
@@ -103,7 +112,7 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
     messages = [
         {
             "role": "system",
-            "content": "You are a friendly AI assistant. Respond naturally and keep your answers conversational.",
+            "content": "Start by getting consent from the user and then proceed with the conversation",
         },
     ]
 
