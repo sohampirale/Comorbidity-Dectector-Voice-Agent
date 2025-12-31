@@ -63,19 +63,50 @@ from strands.models.litellm import LiteLLMModel
 #from strands_tools import calculator 
 from helpers.read_md import read_md
 from pipecat.services.deepgram.tts import DeepgramTTSService
+from deepgram import LiveOptions
+from pipecat.transcriptions.language import Language
+
+
 
 load_dotenv(override=True)
+
 
 
 async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
     logger.info(f"Starting bot")
 
-    stt = DeepgramSTTService(api_key=os.getenv("DEEPGRAM_API_KEY"))
+    notes:list[str]=[]
+
+    @tool
+    def add_note(note:str):
+        """Tool to add notes to review later for Comorbidity identification (with CCI, Elixhauser,ICD_10) after end of call
+        Args:
+        note: str - The note to add to the notes list
+        """
+        notes.append(note)
+        return "Note added successfully"
+
+    @tool
+    def end_call():
+        """Tool to end the call"""
+        print(f"Notes: {notes}")
+        return "Call ended successfully"
+
+
+    live_options = LiveOptions(
+        model="nova-3",
+        language=Language.EN_US,  
+        interim_results=True,
+        smart_format=True,
+    )
+
+    stt = DeepgramSTTService(api_key=os.getenv("DEEPGRAM_API_KEY"), live_options=live_options)
 
     # tts = CartesiaTTSService(
     #     api_key=os.getenv("CARTESIA_API_KEY"),
     #     voice_id="71a7ad14-091c-4e8e-a314-022ece01c121",  # British Reading Lady
     # )
+
 
     tts = DeepgramTTSService(
         api_key=os.getenv("DEEPGRAM_API_KEY"),
@@ -99,11 +130,13 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
         },
     )
 
+    # agent_prompt = read_md("prompts/agents/patient_onboard_agent/CLAUDE.md")
     agent_prompt = read_md("prompts/agents/patient_onboard_agent/AGENT.md")
+
 
     agent = Agent(
         model=model,
-        tools=[],
+        tools=[add_note, end_call],
         system_prompt=agent_prompt
     )
 
@@ -153,6 +186,7 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
     @transport.event_handler("on_client_disconnected")
     async def on_client_disconnected(transport, client):
         logger.info(f"Client disconnected")
+        print(f"Notes: {notes}")
         await task.cancel()
 
     runner = PipelineRunner(handle_sigint=runner_args.handle_sigint)
