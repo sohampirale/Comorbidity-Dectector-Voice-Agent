@@ -60,7 +60,8 @@ logger.info("✅ All components loaded successfully!")
 from pipecat.processors.frameworks.strands_agents import StrandsAgentsProcessor
 from strands import Agent,tool
 from strands.models.litellm import LiteLLMModel
-#from strands_tools import calculator # Import the calculator tool
+#from strands_tools import calculator 
+from helpers.read_md import read_md
 
 load_dotenv(override=True)
 
@@ -79,12 +80,13 @@ model = LiteLLMModel(
     },
 )
 
+agent_prompt = read_md("prompts/agents/patient_onboard_agent/AGENT.md")
+
 agent = Agent(
     model=model,
     tools=[],
-    system_prompt="You are a helpful assistant that can answer questions and help with tasks."
+    system_prompt=agent_prompt
 )
-
 
 async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
     logger.info(f"Starting bot")
