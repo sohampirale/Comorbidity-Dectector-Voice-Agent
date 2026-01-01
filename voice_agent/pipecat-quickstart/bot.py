@@ -88,10 +88,10 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
         return "Note added successfully"
 
     @tool
-    def end_call():
+    async def end_call():
         """Tool to end the call"""
         print(f"Notes: {notes}")
-        asyncio.create_task(asyncio.to_thread(analyze_comorbidities(notes)))
+        asyncio.create_task(asyncio.to_thread(await analyze_comorbidities(notes,context.messages)))
         return "Call ended successfully"
 
 

@@ -1,48 +1,59 @@
 import os
-from model import CCIComorbiditiesOutput
-from CCI_indexes import cci_indexes, cci_mapping
+from prompts.agents.cci_expert.model import CCIComorbiditiesOutput
+from prompts.agents.cci_expert.CCI_indexes import cci_indexes, cci_mapping
 from langchain_cohere import ChatCohere
 from langchain_core.messages import SystemMessage, HumanMessage
 
 
 async def get_cci_index(clinical_notes: list[str], conversation_history: list[dict]) -> int:
-  
+    print('inside get_cci_index')
+    #implement try except block for entire code in this function
+    try:
 
-    # Get the directory of the current file
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    agent_md_path = os.path.join(current_dir, "AGENT.md")
+        # Get the directory of the current file
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        agent_md_path = os.path.join(current_dir, "AGENT.md")
 
-    with open(agent_md_path, "r") as f:
-        system_prompt = f.read()
+        with open(agent_md_path, "r") as f:
+            system_prompt = f.read()
 
-    llm = ChatCohere(
-        model="command-r-plus", cohere_api_key=os.getenv("COHERE_API_KEY")
-    ).with_structured_output(CCIComorbiditiesOutput)
+        llm = ChatCohere(
+            model="command-r-plus", cohere_api_key=os.getenv("COHERE_API_KEY")
+        ).with_structured_output(CCIComorbiditiesOutput)
 
-    cci_indexes_text = "\n".join(
-        [
-            f"- {item['variable']}: {item['condition']} ({item['points']} points)"
-            for item in cci_indexes
-        ]
-    )
+        cci_indexes_text = "\n".join(
+            [
+                f"- {item['variable']}: {item['condition']} ({item['points']} points)"
+                for item in cci_indexes
+            ]
+        )
 
-    human_message = f"""
-    Clinical Notes: {chr(10).join(clinical_notes)}
+        conversation_text = "\n".join(
+            f"{msg.get('role', 'unknown')}: {msg.get('content', '')}"
+            for msg in conversation_history
+            if isinstance(msg, dict)
+        )
 
-    Conversation History: {chr(10).join(conversation_history)}
+        human_message = f"""
+        Clinical Notes: {chr(10).join(clinical_notes)}
 
-    Available CCI Variables:
-    {cci_indexes_text}
+        Conversation History: {conversation_text}
 
-    Please analyze the patient information and identify any CCI comorbidities present.
-    """
+        Available CCI Variables:
+        {cci_indexes_text}
 
-    response = await llm.ainvoke(
-        [SystemMessage(content=system_prompt), HumanMessage(content=human_message)]
-    )
+        Please analyze the patient information and identify any CCI comorbidities present.
+        """
 
-    identified_variables = list(set(response.identified_cci_comorbidities_variables_list))
+        response = await llm.ainvoke(
+            [SystemMessage(content=system_prompt), HumanMessage(content=human_message)]
+        )
 
-    total_cci_index = sum(cci_mapping.get(variable, 0) for variable in identified_variables)
+        identified_variables = list(set(response.identified_cci_comorbidities_variables_list))
 
-    return total_cci_index
+        total_cci_index = sum(cci_mapping.get(variable, 0) for variable in identified_variables)
+
+        return total_cci_index
+    except Exception as e:
+        print(f"Error in get_cci_index: {e}")
+        return 0

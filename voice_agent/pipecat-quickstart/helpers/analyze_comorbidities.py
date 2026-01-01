@@ -1,5 +1,5 @@
-from agents.cci_expert.tool import get_cci_index
-from agents.elixhauster_expert.tool import get_elixhauser_result
+from prompts.agents.cci_expert.tool import get_cci_index
+from prompts.agents.elixhauster_expert.tool import get_elixhauser_result
 
 async def analyze_comorbidities(clinical_notes: list[str], conversation_history: list[dict]):
     """
@@ -13,6 +13,7 @@ async def analyze_comorbidities(clinical_notes: list[str], conversation_history:
         tuple: (cci_index, elixhauser_dict)
     """
     # Check if tools are available
+    print('inside analyze_comorbidities')
     if get_cci_index is None:
         print("Warning: CCI tool not available, returning 0")
         cci_index = 0
