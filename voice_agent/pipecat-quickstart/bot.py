@@ -91,7 +91,7 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
     async def end_call():
         """Tool to end the call"""
         print(f"Notes: {notes}")
-        asyncio.create_task(asyncio.to_thread(await analyze_comorbidities(notes,context.messages)))
+        asyncio.create_task(analyze_comorbidities(notes,context.messages))
         return "Call ended successfully"
 
 

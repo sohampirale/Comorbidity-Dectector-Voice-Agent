@@ -10,6 +10,7 @@ dependencies = [
     "litellm",
     "langchain_cohere",
     "langchain_core",
+    "langchain-openai",
 ]
 
 [dependency-groups]
