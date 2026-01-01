@@ -7,7 +7,9 @@ dependencies = [
     "pipecat-ai[webrtc,daily,silero,deepgram,openai,cartesia,local-smart-turn-v3,runner]",
     "pipecat-ai-cli",
     "strands-agents",
-    "litellm"
+    "litellm",
+    "langchain_cohere",
+    "langchain_core",
 ]
 
 [dependency-groups]

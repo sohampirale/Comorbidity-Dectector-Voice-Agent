@@ -65,7 +65,8 @@ from helpers.read_md import read_md
 from pipecat.services.deepgram.tts import DeepgramTTSService
 from deepgram import LiveOptions
 from pipecat.transcriptions.language import Language
-
+import asyncio
+from helpers.analyze_comorbidities import analyze_comorbidities
 
 
 load_dotenv(override=True)
@@ -90,6 +91,7 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
     def end_call():
         """Tool to end the call"""
         print(f"Notes: {notes}")
+        asyncio.create_task(asyncio.to_thread(analyze_comorbidities(notes)))
         return "Call ended successfully"
 
 

@@ -1,24 +1,20 @@
 import os
 from model import ElixhausterAgentStructure
 from Elixhauser_indexes import elixhauser_indexes
+from langchain_cohere import ChatCohere
+from langchain_core.messages import SystemMessage, HumanMessage
 
 
 async def get_elixhauser_result(
     clinical_notes: list[str], conversation_history: list[dict]
 ) -> dict:
-    try:
-        from langchain_cohere import ChatCohere
-        from langchain_core.messages import SystemMessage, HumanMessage
-    except ImportError:
-        print(
-            "Error: langchain_cohere or langchain_core not installed. Please install with: pip install langchain-cohere langchain-core"
-        )
-        return elixhauser_indexes
 
-    with open(
-        "/home/soham/coding/proj/Comorbidity-Dectector-Voice-Agent/voice_agent/pipecat-quickstart/prompts/agents/elixhauster_expert/AGENT.md",
-        "r",
-    ) as f:
+
+    # Get the directory of the current file
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    agent_md_path = os.path.join(current_dir, "AGENT.md")
+
+    with open(agent_md_path, "r") as f:
         system_prompt = f.read()
 
     llm = ChatCohere(

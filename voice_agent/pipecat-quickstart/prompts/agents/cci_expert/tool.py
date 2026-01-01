@@ -1,22 +1,18 @@
 import os
 from model import CCIComorbiditiesOutput
 from CCI_indexes import cci_indexes, cci_mapping
+from langchain_cohere import ChatCohere
+from langchain_core.messages import SystemMessage, HumanMessage
 
 
 async def get_cci_index(clinical_notes: list[str], conversation_history: list[dict]) -> int:
-    try:
-        from langchain_cohere import ChatCohere
-        from langchain_core.messages import SystemMessage, HumanMessage
-    except ImportError:
-        print(
-            "Error: langchain_cohere or langchain_core not installed. Please install with: pip install langchain-cohere langchain-core"
-        )
-        return 0
+  
 
-    with open(
-        "/home/soham/coding/proj/Comorbidity-Dectector-Voice-Agent/voice_agent/pipecat-quickstart/prompts/agents/cci_expert/AGENT.md",
-        "r",
-    ) as f:
+    # Get the directory of the current file
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    agent_md_path = os.path.join(current_dir, "AGENT.md")
+
+    with open(agent_md_path, "r") as f:
         system_prompt = f.read()
 
     llm = ChatCohere(
@@ -31,15 +27,15 @@ async def get_cci_index(clinical_notes: list[str], conversation_history: list[di
     )
 
     human_message = f"""
-Clinical Notes: {chr(10).join(clinical_notes)}
+    Clinical Notes: {chr(10).join(clinical_notes)}
 
-Conversation History: {chr(10).join(conversation_history)}
+    Conversation History: {chr(10).join(conversation_history)}
 
-Available CCI Variables:
-{cci_indexes_text}
+    Available CCI Variables:
+    {cci_indexes_text}
 
-Please analyze the patient information and identify any CCI comorbidities present.
-"""
+    Please analyze the patient information and identify any CCI comorbidities present.
+    """
 
     response = await llm.ainvoke(
         [SystemMessage(content=system_prompt), HumanMessage(content=human_message)]
