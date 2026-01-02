@@ -1,8 +1,9 @@
 import csv
 import asyncio
 from typing import List, Dict
+from langchain_core.tools import tool
 
-
+@tool
 async def lookup_icd(
     mandatory_keywords: list[str], additional_keywords: list[str], no_of_rows: int
 ) -> List[Dict[str, str]]:
@@ -101,6 +102,3 @@ async def lookup_icd(
     return result
 
 
-if __name__ == "__main__":
-    result = asyncio.run(lookup_icd(["Gonococcal"], ["infection", "heart"], 10))
-    print(result)

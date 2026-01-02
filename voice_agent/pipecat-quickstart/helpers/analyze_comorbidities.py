@@ -1,5 +1,6 @@
 from prompts.agents.cci_expert.tool import get_cci_index
 from prompts.agents.elixhauster_expert.tool import get_elixhauser_result
+from prompts.agents.icd_10_codes_expert.tool import analyze_icd_codes
 
 async def analyze_comorbidities(clinical_notes: list[str], conversation_history: list[dict]):
     """
@@ -28,8 +29,18 @@ async def analyze_comorbidities(clinical_notes: list[str], conversation_history:
         # Generate Elixhauser dict
         elixhauser_dict = await get_elixhauser_result(clinical_notes, conversation_history)
 
+    if analyze_icd_codes is None:
+        print("Warning: analyze_icd_codes tool not available, returning {}")
+        icd_codes_data = {}
+    else:
+        # Generate CCI index
+        icd_codes_data = await analyze_icd_codes(clinical_notes, conversation_history)
+
     # Print both results
     print(f"CCI Index: {cci_index}")
     print(f"Elixhauser Dict: {elixhauser_dict}")
-
+    print(f"icd_codes_data : {icd_codes_data}")
+    icd_codes = icd_codes_data['icd_codes']
+    icd_codes_report=icd_codes_data['icd_codes_report']
+    
     return cci_index, elixhauser_dict
