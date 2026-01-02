@@ -1,7 +1,11 @@
 import csv
 import asyncio
+import os
 from typing import List, Dict
-from langchain_core.tools import tool
+
+# from langchain_core.tools import tool
+from strands import tool
+
 
 @tool
 async def lookup_icd(
@@ -44,6 +48,7 @@ async def lookup_icd(
 
         Important Note: These examples serve as templates for tool usage patterns only. In practice, your keyword selection and row count must adapt dynamically to each patient's unique clinical presentation, demographic factors, and comorbidity complexity. Adjust mandatory keywords to the core condition, use additional keywords for modifiers/severity, and scale row count based on diagnostic specificity needed at runtime.
     """
+
     print("inside lookup_icd")
 
     if not mandatory_keywords:
@@ -55,7 +60,9 @@ async def lookup_icd(
     matching_rows = []
 
     try:
-        with open("icd_10_codes.csv", "r", encoding="utf-8") as file:
+        csv_path = os.path.join(os.path.dirname(__file__), "icd_10_codes.csv")
+        print(f'csv_path : {csv_path}')
+        with open(csv_path, "r", encoding="utf-8") as file:
             csv_reader = csv.DictReader(file)
 
             # Load entire CSV and search for matching rows
@@ -100,5 +107,3 @@ async def lookup_icd(
         f"Found {len(matching_rows)} matching rows with all mandatory keywords in SHORT_DESCRIPTION, returning top {len(result)}"
     )
     return result
-
-
