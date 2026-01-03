@@ -11,6 +11,8 @@ dependencies = [
     "langchain_cohere",
     "langchain_core",
     "langchain-openai",
+    "beanie",
+    "motor"
 ]
 
 [dependency-groups]

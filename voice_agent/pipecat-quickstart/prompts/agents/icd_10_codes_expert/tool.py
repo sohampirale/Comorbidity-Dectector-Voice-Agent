@@ -1,9 +1,5 @@
 import os
 from prompts.agents.icd_10_codes_expert.lookup_icd import lookup_icd
-from langchain_core.messages import SystemMessage, HumanMessage
-from langchain_openai import ChatOpenAI
-
-# from langchain_core.tools import tool
 from strands import tool, Agent
 from strands.models.litellm import LiteLLMModel
 
@@ -16,7 +12,7 @@ model = LiteLLMModel(
     # model_id="openrouter/google/gemini-2.0-flash-exp:free",
     # model_id="openrouter/google/gemini-2.0-flash-001",
     # model_id="openrouter/google/gemini-2.5-pro",
-    params={"temperature": 0.5, "max_tokens": 1000},
+    params={"temperature": 0.5, "max_tokens": 1000}
 )
 
 
@@ -31,7 +27,7 @@ async def analyze_icd_codes(clinical_notes: list[str], conversation_history: lis
         with open(agent_md_path, "r") as f:
             agent_prompt = f.read()
 
-        print(f"agent_prompt : {agent_prompt}")
+        # print(f"agent_prompt : {agent_prompt}")
 
         @tool
         def add_icd(ICD_10_CODE: str, long_description: str, clinical_reason: str):
@@ -80,12 +76,6 @@ async def analyze_icd_codes(clinical_notes: list[str], conversation_history: lis
 
         agent = Agent(model=model, tools=[add_icd, lookup_icd], system_prompt=agent_prompt)
 
-        # llm = ChatOpenAI(
-        #     model="openai/gpt-4o-mini",
-        #     api_key=os.getenv("OPENROUTER_API_KEY"),
-        #     base_url="https://openrouter.ai/api/v1",
-        # ).bind_tools([lookup_icd, add_icd])
-
         conversation_text = "\n".join(
             f"{msg.get('role', 'unknown')}: {msg.get('content', '')}"
             for msg in conversation_history
@@ -102,11 +92,7 @@ async def analyze_icd_codes(clinical_notes: list[str], conversation_history: lis
 
         response = agent(human_message)
 
-        # response = await llm.ainvoke(
-        #     [SystemMessage(content=agent_prompt), HumanMessage(content=human_message)]
-        # )
-
-        print(f"response from analyze_icd_codes: {response}")
+        # print(f"response from analyze_icd_codes: {response}")
 
         return {"icd_codes": icd_codes, "icd_codes_report": response.message['content'][0]['text']}
     except Exception as e:

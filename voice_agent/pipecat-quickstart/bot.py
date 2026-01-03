@@ -1,3 +1,4 @@
+from locale import MON_1
 import os
 
 from dotenv import load_dotenv
@@ -46,11 +47,9 @@ from deepgram import LiveOptions
 from pipecat.transcriptions.language import Language
 import asyncio
 from helpers.analyze_comorbidities import analyze_comorbidities
-
+from prompts.agents.db_expert.database import init_database
 
 load_dotenv(override=True)
-
-
 
 async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
     logger.info(f"Starting bot")
@@ -197,8 +196,6 @@ async def bot(runner_args: RunnerArguments):
 
     await run_bot(transport, runner_args)
 
-
 if __name__ == "__main__":
-    from pipecat.runner.run import main
-
+    from pipecat.runner.run import main   
     main()
